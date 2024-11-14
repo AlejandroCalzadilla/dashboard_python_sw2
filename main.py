@@ -80,7 +80,8 @@ async def cantidad_prendas_por_tipo():
     GROUP BY 
         g.name
     ORDER BY 
-        total_quantity DESC;
+        total_quantity DESC
+    LIMIT 5;
     """
     pg_cursor.execute(query)
     result = pg_cursor.fetchall()
@@ -145,8 +146,6 @@ async def pedidos_por_cliente():
     result = pg_cursor.fetchall()
     return {"data": result}
 
-
-
 # KPI 7: Cambios Realizados a Pedidos por Mes
 @app.get("/kpi/cambios_realizados_por_mes")
 async def cambios_realizados_por_mes():
@@ -210,6 +209,54 @@ async def promedio_prendas_por_pedido():
         AVG(jsonb_array_length(order_items)) AS avg_items_per_order
     FROM 
         orders;
+    """
+    pg_cursor.execute(query)
+    result = pg_cursor.fetchone()
+    return {"data": result[0]}
+
+# KPI 11: Total de Ventas del Mes Actual
+@app.get("/kpi/total_ventas_mes_actual")
+async def total_ventas_mes_actual():
+    query = """
+    SELECT 
+        SUM(total_price) AS total_sales
+    FROM 
+        orders
+    WHERE 
+        status = 'completado' AND
+        DATE_TRUNC('month', order_date) = DATE_TRUNC('month', CURRENT_DATE);
+    """
+    pg_cursor.execute(query)
+    result = pg_cursor.fetchone()
+    return {"data": result[0]}
+
+# KPI 12: Porcentaje de Pedidos Completados
+@app.get("/kpi/porcentaje_pedidos_completados")
+async def porcentaje_pedidos_completados():
+    query = """
+    SELECT 
+        (COUNT(*) FILTER (WHERE status = 'completado') * 100.0 / COUNT(*)) AS porcentaje_completados
+    FROM 
+        orders;
+    """
+    pg_cursor.execute(query)
+    result = pg_cursor.fetchone()
+    return {"data": result[0]}
+
+# KPI 13: Promedio de Gasto por Cliente
+@app.get("/kpi/promedio_gasto_por_cliente")
+async def promedio_gasto_por_cliente():
+    query = """
+    SELECT 
+        AVG(total_spent) AS avg_spent
+    FROM (
+        SELECT 
+            SUM(total_price) AS total_spent
+        FROM 
+            orders
+        GROUP BY 
+            customer_id
+    ) AS subquery;
     """
     pg_cursor.execute(query)
     result = pg_cursor.fetchone()
