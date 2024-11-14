@@ -5,7 +5,7 @@ import json
 from bson import ObjectId, DBRef
 
 # Configurar la conexión a MongoDB
-mongo_client = MongoClient("mongodb://localhost:27017/sastreria")
+mongo_client = MongoClient("mongodb://143.198.148.81:27017/sastreria")
 db = mongo_client["sastreria"]
 
 # Función para obtener todos los datos de una colección

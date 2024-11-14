@@ -23,11 +23,11 @@ async def startup_event():
 # Configurar la conexión a PostgreSQL
 try:
     pg_conn = psycopg2.connect(
-        dbname="dashboard",
-        user="postgres",
+        dbname="postgres",
+        user="postgres.biqvlcjahcefjcxxittl",
         password="ale12345678",
-        host="localhost",
-        port="5432"
+        host="aws-0-us-west-1.pooler.supabase.com",
+        port="6543"
     )
     pg_cursor = pg_conn.cursor()
 except psycopg2.OperationalError as e:
