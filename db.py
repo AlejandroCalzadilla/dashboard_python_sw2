@@ -8,7 +8,7 @@ def get_db_connection():
             dbname="dashboard",
             user="postgres",
             password="ale12345678",
-            host="192.168.1.5",
+            host="localhost",
             port="5432"
         )
         cursor = conn.cursor()
@@ -18,7 +18,7 @@ def get_db_connection():
         raise
 def get_mongo_connection():
     try:
-        mongo_client = MongoClient("mongodb://192.168.1.5:27017/sastreria")
+        mongo_client = MongoClient("mongodb://34.55.49.4:27017/sastreria")
         db = mongo_client["sastreria"]
         return db
     except Exception as e:
