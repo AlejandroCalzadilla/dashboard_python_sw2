@@ -3,10 +3,11 @@ from pymongo import MongoClient
 import psycopg2
 import json
 from bson import ObjectId, DBRef
+from db import get_mongo_connection
+
 
 # Configurar la conexión a MongoDB
-mongo_client = MongoClient("mongodb://localhost:27017/sastreria")
-db = mongo_client["sastreria"]
+db=get_mongo_connection()
 
 # Función para obtener todos los datos de una colección
 def get_all_from_collection(collection_name):
@@ -72,24 +73,17 @@ def map_columns(record, table):
         "stores": {"_id": "id"},
         "inventory": {"_id": "id", "rawMaterialId": "raw_material_id", "storeId": "store_id"}
     }
+    valid_columns = column_mapping.get(table, {}).values()
     mapped_record = {}
     for key, value in record.items():
         mapped_key = column_mapping.get(table, {}).get(key, key)
-        mapped_record[mapped_key] = value
+        if mapped_key in valid_columns:
+            mapped_record[mapped_key] = value
     return mapped_record
 
 # Función para transferir datos a PostgreSQL
-def transfer_data_to_postgres():
+def transfer_data_to_postgres(pg_conn, pg_cursor):
     try:
-        pg_conn = psycopg2.connect(
-            dbname="dashboard",
-            user="postgres",
-            password="ale12345678",
-            host="localhost",
-            port="5432"
-        )
-        pg_cursor = pg_conn.cursor()
-
         collections = {
             "orders": get_all_orders,
             "order_changes": get_all_order_changes,
@@ -122,13 +116,10 @@ def transfer_data_to_postgres():
                         pg_cursor.execute(insert_statement, values)
                         pg_conn.commit()
 
-        pg_cursor.close()
-        pg_conn.close()
+        #pg_cursor.close()
+        #pg_conn.close()
     except psycopg2.Error as e:
         print(f"Error al transferir datos a PostgreSQL: {e}")
         if pg_conn:
             pg_conn.rollback()
-        if pg_cursor:
-            pg_cursor.close()
-        if pg_conn:
-            pg_conn.close()
+       
